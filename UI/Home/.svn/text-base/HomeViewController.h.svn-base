@@ -1,0 +1,25 @@
+//
+//  HomeViewController.h
+//  TB
+//
+//  Created by zucknet on 13/6/6.
+//  Copyright (c) 2013年 kimilee. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "WaterFlowView.h"
+#import "RefreshHeaderAndFooterView.h"
+@class HomeAPIParms;
+@class SDSegmentedControl;
+@interface HomeViewController : BaseViewController<WaterFlowViewDataSource,WaterFlowViewDelegate,RefreshHeaderAndFooterViewDelegate>
+{
+    int count;
+    NSMutableArray * homeData;
+    NSString *testImg;
+    WaterFlowView *_waterFlowView;
+    int * page;
+    HomeAPIParms * parmas ;
+    SDSegmentedControl *segmentedControl;
+}
+@property (nonatomic, retain) WaterFlowView *waterFlowView;
+@end

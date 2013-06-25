@@ -1,0 +1,76 @@
+//
+// Prefix header for all source files of the 'TB' target in the 'TB' project
+//
+#import <Availability.h>
+#import"NSMutableDictionary+params.h"
+#import"NSString+utility.h"
+#import"NSDictionary+getByData.h"
+#import "NSMutableDictionary+tmallSeach.h"
+#import "AppUtility.h"
+#ifndef __IPHONE_3_0
+#warning "This project uses features only available in iOS SDK 3.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+    #import <CoreData/CoreData.h>
+    #import "MobClick.h"
+#endif
+
+//NetWorkStatus
+#define NetWorkWifiStatus @"wifi"
+#define NetWork3GStatus @"3G"
+#define NetWorkNoNetWorkStatus @"unkown"
+
+//LOG宏定义
+#ifdef DEBUG
+#define LOG(...) NSLog(__VA_ARGS__);
+
+//显示函数名,行数
+#define DebugLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#else
+# define DebugLog(...)
+#define LOG(...) 
+#endif
+
+//获得NSUserDefaults
+#define USER_DEFAULT [NSUserDefaults standardUserDefaults]
+//NSImageByName
+#define GetImage(name) [UIImage imageNamed:name]
+
+//淘宝APPEKY
+#define kAppkey @"21474414"
+#define kAppsecretcode @"99f57efddfd07fcc602f082e4f584aab"
+#define kCallbackUrl @"http://iapper.net"
+
+//DataSoucse
+#define HOME_DATA_NAME @"home_data"
+//淘宝API
+#define TMALL_ITEM_SEACH_API  @"tmall.items.discount.search"
+//淘宝客URL
+//        &ali_trackid=2:mm_34576926_0_0:1371174611_4k7_509162937
+
+//友盟 sdk
+#define UMENG_APPKEY @"51c4192e56240b164e0d0f46"
+
+
+
+//通知
+#define TMALL_SEACH_HOME_NOTIF @"TMALL_SEACH_HOME_NOTIF"
+#define TMALL_SEACH_DISCOVER_NOTIF @"TMALL_SEACH_DISCOVER_NOTIF"
+
+#define TMALL_SEACH_NOTIF_NONETWORK @"TMALL_SEACH_NONETWORK"
+#define TMALL_SEACH_NOTIF_NODATA @"TMALL_SEACH_NOTIF_NODATA"
+
+#define TMALL_SEACH_HOME_GET_NOTF @"TMALL_SEACH_HOME_GET_NOTF"
+#define TMALL_SEACH_DISCOVER_GET_NOTF @"TMALL_SEACH_DISCOVER_GET_NOTF"
+
+
+//Massage
+typedef enum
+{
+    NoNetWorkTpyeMassage,
+    NoDataTpyeMassage,
+}MassageTpye;

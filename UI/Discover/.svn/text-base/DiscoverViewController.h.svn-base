@@ -1,0 +1,26 @@
+//
+//  HomeViewController.h
+//  TB
+//
+//  Created by zucknet on 13/6/6.
+//  Copyright (c) 2013年 kimilee. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "WaterFlowView.h"
+#import "RefreshHeaderAndFooterView.h"
+#import "TBSeachBar.h"
+@class HomeAPIParms;
+@interface DiscoverViewController : BaseViewController<WaterFlowViewDataSource,WaterFlowViewDelegate,UISearchBarDelegate>
+{
+    int count;
+    NSMutableArray * homeData;
+    NSString *testImg;
+    WaterFlowView *_waterFlowView;
+    int * page;
+    HomeAPIParms * parmas ;
+    TBSeachBar *_seachBar;
+}
+@property (nonatomic, retain) WaterFlowView *waterFlowView;
+@property(nonatomic,strong)TBSeachBar *seachBar;
+@end

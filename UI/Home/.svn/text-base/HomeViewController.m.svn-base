@@ -1,0 +1,265 @@
+//
+//  HomeViewController.m
+//  TB
+//
+//  Created by zucknet on 13/6/6.
+//  Copyright (c) 2013年 kimilee. All rights reserved.
+//
+
+#import "HomeViewController.h"
+#import <QuartzCore/QuartzCore.h>
+#import "UIView+size.h"
+#import "TBApiManage.h"
+#import "AppUtility.h"
+#import "HomeAPIParms.h"
+#import "TBitem.h"
+#import <QuartzCore/QuartzCore.h>
+#import "UIImageView+OnlineImage.h"
+#import "AppGCDManage.h"
+#import "SDSegmentedControl.h"
+#define NUMBER_OF_COLUMNS 3
+#define TAB_NAV_HIGHT 90
+#define SDC_HIGHT 44
+@interface HomeViewController ()
+@end
+@implementation HomeViewController
+@synthesize waterFlowView = _waterFlowView;
+-(void)finishLoadData
+{
+    [AppGCDManage ManageMainThread:^
+    {
+        
+        homeData = [[AppUtility instance]homeData];
+        // [self addData];
+        //[self initData];
+        if (homeData) {
+            [self.waterFlowView reloadData];
+            LOG(@"finishLoadData");
+        }
+        else
+        {
+            LOG(@"LoadDataError");
+        }
+    }];
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    homeData = [[AppUtility instance]homeData];
+    NSString * seachName = [NSString getURLcodeString:@"裙子"];
+    parmas = [[HomeAPIParms alloc]initWithBaseParamsMethod:TMALL_ITEM_SEACH_API SeachName:seachName start:0];
+    [parmas setPage_size:@"20"];
+    [[TBApiManage instance]setHomeParmas:parmas];
+    [[TBApiManage instance]getTmallSeachHomeDataByPage:[NSNumber numberWithInt:0]];
+    //[self.waterFlowView reloadData];
+	// Do any additional setup after loading the view.
+//    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonItemStyleDone target:self action:@selector(addData)];
+//    [self initData];
+}
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        self.title = @"首页";
+        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(finishLoadData) name:TMALL_SEACH_HOME_NOTIF object:nil];
+        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(showNoDataMassage) name:TMALL_SEACH_NOTIF_NODATA object:nil];
+           [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(showNoNetWorkMassage) name:TMALL_SEACH_NOTIF_NONETWORK object:nil];
+        
+        testImg =    @"http://img.topit.me/l/201008/11/12815218412635.jpg";
+    }
+    return self;
+}
+
+-(void)showNoNetWorkMassage
+{
+    [AppUtility showMassage:@"网络不稳"];
+    [self performSelector:@selector(disMassage) withObject:self afterDelay:1];
+}
+-(void)showNoDataMassage
+{
+    [AppUtility showMassage:@"没有数据更新"];
+    [self performSelector:@selector(disMassage) withObject:self afterDelay:1];
+}
+-(void)disMassage
+{
+    [AppUtility unshowMassage];
+}
+-(void)loadView
+{
+    [super loadView];
+    [self initWaterView];
+    NSArray * arr = [[NSArray alloc]initWithObjects:@"最新",@"最热",nil];
+    segmentedControl = [[SDSegmentedControl alloc]initWithItems:arr];
+    [segmentedControl setSelectedSegmentIndex:1];
+    [segmentedControl setFrame:CGRectMake(0, 0, 320, SDC_HIGHT)];
+    [segmentedControl addTarget:self action:@selector(segmentDidChange:) forControlEvents:UIControlEventValueChanged];
+    [self.view addSubview:segmentedControl];
+    
+    //[self.waterFlowView.s];
+    
+   // [self initData];
+}
+
+- (void)updateSelectedSegmentLabel
+{
+    LOG(@"%d",segmentedControl.selectedSegmentIndex);
+}
+- (IBAction)segmentDidChange:(id)sender
+{
+    [self updateSelectedSegmentLabel];
+}
+-(void)initWaterView
+{
+    self.waterFlowView = [[WaterFlowView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, self.view.height-TAB_NAV_HIGHT-SDC_HIGHT)];
+    //self.waterFlowView.backgroundColor = [UIColor yellowColor];
+    [self.view addSubview:self.waterFlowView];
+    self.waterFlowView.waterFlowDataSource = self;
+    self.waterFlowView.waterFlowDelegate = self;
+    [self.waterFlowView.refreshView setDelegate:self];
+}
+
+
+- (void)viewDidUnload
+{
+    [super viewDidUnload];
+    // Release any retained subviews of the main view.
+    // e.g. self.myOutlet = nil;
+    self.waterFlowView = nil;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+	[super viewWillDisappear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+	[super viewDidDisappear:animated];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    // Return YES for supported orientations
+    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+}
+
+#pragma mark -
+
+#pragma mark - WaterFlowViewDataSource
+
+- (NSInteger)waterFlowView:(WaterFlowView *)waterFlowView numberOfRowsInColumn:(NSInteger)column
+{
+    if (homeData.count>0) {
+        return [homeData count]/3;
+    }
+    else
+    {
+        return 0;
+    }
+    
+    //return [[self.dataArray objectAtIndex:column] count];
+
+}
+
+- (WaterFlowViewCell *)waterFlowView:(WaterFlowView *)waterFlowView cellForRowAtIndexPath:(WFIndexPath *)indexPath
+{
+    static NSString *cellIdentifier = @"WaterFlowViewCell";
+    WaterFlowViewCell *cell = [self.waterFlowView dequeueReusableCellWithIdentifier:cellIdentifier];
+    
+    if (nil == cell) {
+#ifdef DEBUG
+        //NSLog(@"Cell is allocated.\n");
+#endif
+        cell = [[WaterFlowViewCell alloc] initWithIdentifier:cellIdentifier];
+    } else {
+#ifdef DEBUG
+        //NSLog(@"Cell is reused from reuse-queue.\n");
+#endif
+    }
+    TBitem * item = [homeData objectAtIndex:indexPath.column+indexPath.row*3];
+   // LOG(@"item %d url :%@:",(indexPath.column+indexPath.row*3),item.pic_path);
+    [cell.imageView setOnlineImage:item.pic_path];
+   // [cell.imageView setFrame:cell.frame];
+//    if (indexPath.column == 0) {
+//        cell.backgroundColor = [UIColor redColor];
+//    } else if (indexPath.column == 1) {
+//        cell.backgroundColor = [UIColor yellowColor];
+//    } else {
+//        cell.backgroundColor = [UIColor blueColor];
+//    }
+    return cell;
+}
+- (CGFloat)waterFlowView:(WaterFlowView *)waterFlowView heightForRowAtIndexPath:(WFIndexPath *)indexPath
+{
+//    float height = 0;
+//	switch ((indexPath.row + indexPath.column )  % 5) {
+//		case 0:
+//			height = 127;
+//			break;
+//		case 1:
+//			height = 100;
+//			break;
+//		case 2:
+//			height = 87;
+//			break;
+//		case 3:
+//			height = 114;
+//			break;
+//		case 4:
+//			height = 140;
+//			break;
+//		default:
+//			break;
+//	}
+//	
+//	height += indexPath.row + indexPath.column;
+	
+	return 100;
+}
+
+- (NSInteger)numberOfColumnsInWaterFlowView:(WaterFlowView *)waterFlowView
+{
+    return 2;
+}
+#pragma mark - WaterFlowViewDelegate
+
+- (void)waterFlowView:(WaterFlowView *)waterFlowView didSelectRowAtIndexPath:(WFIndexPath *)indexPath
+{
+    ;
+}
+- (void)RefreshHeaderAndFooterDidTriggerRefresh:(RefreshHeaderAndFooterView*)view{
+	self.waterFlowView.reloading = YES;
+    if (view.refreshHeaderView.state == PullRefreshLoading) {//下拉刷新动作的内容
+        NSLog(@"header");
+        [self performSelector:@selector(doneLoadingViewData) withObject:nil afterDelay:3.0];
+        
+    }else if(view.refreshFooterView.state == PullRefreshLoading){//上拉加载更多动作的内容
+        NSLog(@"footer");
+        page = page+20;
+        [[TBApiManage instance]getTmallSeachHomeDataByPage:[NSNumber numberWithInt:page]];
+        [self performSelector:@selector(doneLoadingViewData) withObject:nil afterDelay:0.5];
+    }
+}
+- (BOOL)RefreshHeaderAndFooterDataSourceIsLoading:(RefreshHeaderAndFooterView*)view{
+	return self.waterFlowView.reloading; // should return if data source model is reloading
+}
+- (NSDate*)RefreshHeaderAndFooterDataSourceLastUpdated:(RefreshHeaderAndFooterView*)view{
+    return [NSDate date];
+}
+- (void)doneLoadingViewData{
+	//  model should call this when its done loading
+	self.waterFlowView.reloading = NO;
+    [self.waterFlowView.refreshView RefreshScrollViewDataSourceDidFinishedLoading:self.waterFlowView];
+}
+@end
